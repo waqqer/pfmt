@@ -5,12 +5,21 @@ type placeholder_rule interface {
 }
 
 type Formatter[T placeholder_rule] struct {
-	rules map[string]T
+	rules  map[string]T
+	marker string
 }
 
 func NewFormatter[T placeholder_rule](rules map[string]T) *Formatter[T] {
 	return &Formatter[T]{
-		rules: rules,
+		rules:  rules,
+		marker: "%",
+	}
+}
+
+func NewMarkerFormatter[T placeholder_rule](rules map[string]T, marker string) *Formatter[T] {
+	return &Formatter[T]{
+		rules:  rules,
+		marker: marker,
 	}
 }
 
@@ -18,5 +27,13 @@ func (f *Formatter[T]) Format(text string) string {
 	if len(f.rules) == 0 {
 		return text
 	}
-	return ""
+	return f.replaceAll(text)
+}
+
+func (f *Formatter[T]) replaceAll(text string) string {
+	return "sd"
+}
+
+func parseText(text string) []string {
+
 }
