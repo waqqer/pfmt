@@ -61,3 +61,52 @@ func main() {
 	// Current time: 15:04:05. Date: %date%
 }
 ```
+
+### Empty formatter
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/waqqer/pfmt"
+)
+
+func main() {
+	formatter := pfmt.NewEmptyFormatter() // no rules
+	text := formatter.Format("Current time: %time%")
+
+	fmt.Println(text)
+	// Current time: %time%
+}
+```
+
+### Change formatter markers
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/waqqer/pfmt"
+)
+
+func main() {
+	rules := map[string]interface{}{
+		"time": func() string {
+			return time.Now().Format("15:04:05")
+		},
+	}
+
+	formatter := pfmt.NewFormatter(rules)
+	formatter.SetMarkers("{", "}")
+	text := formatter.Format("Current time: {time}")
+
+	fmt.Println(text)
+	// Current time: 15:04:05
+}
+```
