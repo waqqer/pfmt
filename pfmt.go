@@ -5,23 +5,39 @@ import (
 	"strings"
 )
 
-const (
-	start_marker string = "%"
-	end_marker string = "%"
-)
-
 type Formatter struct {
 	rules  map[string]interface{}
+	start_marker string
+	end_marker string
+}
+
+func NewEmptyFormatter() *Formatter {
+	return &Formatter{
+		rules: map[string]interface{}{},
+		start_marker: "%",
+		end_marker: "%",
+	}
 }
 
 func NewFormatter(rules map[string]interface{}) *Formatter {
 	return &Formatter{
-		rules:  rules,
+		rules: rules,
+		start_marker: "%",
+		end_marker: "%",
 	}
+}
+
+func (f *Formatter) SetMarkers(start string, end string) {
+	f.start_marker = strings.TrimSpace(start)
+	f.end_marker = strings.TrimSpace(end)
 }
 
 func (f *Formatter) Format(text string) string {
 	return f.replaceAll(text)
+}
+
+func (f *Formatter) SetRules(rules map[string]interface{}) {
+	f.rules = rules
 }
 
 func (f *Formatter) replaceAll(text string) string {
@@ -31,18 +47,18 @@ func (f *Formatter) replaceAll(text string) string {
 
 	var result strings.Builder
 	for len(text) > 0 {
-		start := strings.Index(text, start_marker)
+		start := strings.Index(text, f.start_marker)
 		if start == -1 {
 			result.WriteString(text)
 			break
 		}
 
 		result.WriteString(text[:start])
-		text = text[start+len(start_marker):]
+		text = text[start+len(f.start_marker):]
 
-		end := strings.Index(text, end_marker)
+		end := strings.Index(text, f.end_marker)
 		if end == -1 {
-			result.WriteString(start_marker)
+			result.WriteString(f.start_marker)
 			result.WriteString(text)
 			break
 		}
@@ -50,16 +66,18 @@ func (f *Formatter) replaceAll(text string) string {
 		key := text[:end]
 		value, exists := f.rules[key]
 		if !exists {
-			result.WriteString(start_marker)
+			result.WriteString(f.start_marker)
 			result.WriteString(key)
-			result.WriteString(end_marker)
+			result.WriteString(f.end_marker)
 		} else if fn, ok := value.(func() string); ok {
 			result.WriteString(fn())
+		} else if fn, ok := value.(func() interface{}); ok {
+			result.WriteString(fmt.Sprintf("%v", fn()))
 		} else {
 			result.WriteString(fmt.Sprint(value))
 		}
 
-		text = text[end+len(end_marker):]
+		text = text[end+len(f.end_marker):]
 	}
 
 	return result.String()
