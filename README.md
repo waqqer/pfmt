@@ -69,7 +69,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/waqqer/pfmt"
 )
