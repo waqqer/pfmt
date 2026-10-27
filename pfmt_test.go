@@ -168,3 +168,44 @@ func TestFormatterFormatWithMarker(t *testing.T) {
 		})
 	}
 }
+
+func TestFormatterFormatWithDoubleMarker(t *testing.T) {
+	tests := []struct {
+		name  string
+		rules map[string]interface{}
+		start_marker string
+		end_marker string
+		input string
+		want  string
+	}{
+		{
+			name:  "replaces string value with 2 different marker",
+			rules: map[string]interface{}{"name": "Alice"},
+			start_marker: "|",
+			end_marker: "&",
+			input: "Hello, |name&!",
+			want:  "Hello, Alice!",
+		},
+		{
+			name:  "replaces numeric value with 2 different marker",
+			rules: map[string]interface{}{"number": 123},
+			start_marker: "|",
+			end_marker: "&",
+			input: "Number: |number&",
+			want:  "Number: 123",
+		},
+	}
+
+	f := NewEmptyFormatter()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f.SetRules(tt.rules)
+			f.SetMarkers(tt.start_marker, tt.end_marker)
+			got := f.Format(tt.input)
+			if got != tt.want {
+				t.Errorf("Format(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
