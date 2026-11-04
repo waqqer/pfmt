@@ -30,6 +30,14 @@ func TestFormatterFormat(t *testing.T) {
 			want:  "Result: hello world",
 		},
 		{
+			name: "calls interface function value",
+			rules: map[string]interface{}{
+				"func": func() interface{} { return 123 },
+			},
+			input: "Result: %func%",
+			want:  "Result: 123",
+		},
+		{
 			name:  "keeps unknown placeholder",
 			rules: map[string]interface{}{"text": "12:00:00"},
 			input: "Date: %date%",
@@ -78,7 +86,7 @@ func TestFormatterFormat(t *testing.T) {
 	}
 
 	f := NewEmptyFormatter()
-
+	
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f.SetRules(tt.rules)
@@ -90,27 +98,61 @@ func TestFormatterFormat(t *testing.T) {
 	}
 }
 
+func TestFormatterRules(t *testing.T) {
+	t.Run("merges rules from constructor", func(t *testing.T) {
+		f := NewFormatter(
+			map[string]interface{}{"name": "Alice", "city": "London"},
+			map[string]interface{}{"name": "Bob"},
+		)
+		got := f.Format("%name% lives in %city%")
+		want := "Bob lives in London"
+		if got != want {
+			t.Errorf("Format() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("adds and overrides rules", func(t *testing.T) {
+		f := NewFormatter(map[string]interface{}{"name": "Alice"})
+		f.AddRule(map[string]interface{}{"name": "Bob"}, map[string]interface{}{"city": "London"})
+		got := f.Format("%name% lives in %city%")
+		want := "Bob lives in London"
+		if got != want {
+			t.Errorf("Format() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("resets rules", func(t *testing.T) {
+		f := NewFormatter(map[string]interface{}{"name": "Alice"})
+		f.Reset()
+		got := f.Format("Hello %name%")
+		want := "Hello %name%"
+		if got != want {
+			t.Errorf("Format() = %q, want %q", got, want)
+		}
+	})
+}
+
 func TestFormatterFormatWithMarker(t *testing.T) {
 	tests := []struct {
-		name  string
-		rules map[string]interface{}
+		name   string
+		rules  map[string]interface{}
 		marker string
-		input string
-		want  string
+		input  string
+		want   string
 	}{
 		{
-			name:  "replaces string value",
-			rules: map[string]interface{}{"name": "Alice"},
+			name:   "replaces string value",
+			rules:  map[string]interface{}{"name": "Alice"},
 			marker: "|",
-			input: "Hello, |name|!",
-			want:  "Hello, Alice!",
+			input:  "Hello, |name|!",
+			want:   "Hello, Alice!",
 		},
 		{
-			name:  "replaces numeric value",
-			rules: map[string]interface{}{"number": 123},
+			name:   "replaces numeric value",
+			rules:  map[string]interface{}{"number": 123},
 			marker: "1",
-			input: "Number: 1number1",
-			want:  "Number: 123",
+			input:  "Number: 1number1",
+			want:   "Number: 123",
 		},
 		{
 			name: "calls function value",
@@ -118,15 +160,15 @@ func TestFormatterFormatWithMarker(t *testing.T) {
 				"func": func() string { return "hello world" },
 			},
 			marker: "%",
-			input: "Result: %func%",
-			want:  "Result: hello world",
+			input:  "Result: %func%",
+			want:   "Result: hello world",
 		},
 		{
-			name:  "keeps unknown placeholder",
-			rules: map[string]interface{}{"text": "12:00:00"},
+			name:   "keeps unknown placeholder",
+			rules:  map[string]interface{}{"text": "12:00:00"},
 			marker: "/",
-			input: "Date: /date/",
-			want:  "Date: /date/",
+			input:  "Date: /date/",
+			want:   "Date: /date/",
 		},
 		{
 			name: "replaces known placeholders and keeps unknown ones",
@@ -136,22 +178,22 @@ func TestFormatterFormatWithMarker(t *testing.T) {
 				"func":   func() string { return "hello world" },
 			},
 			marker: ".",
-			input: "Text: .text. | Num: .number. | Func: .func. | Date: .date.",
-			want:  "Text: 12:00:00 | Num: 123 | Func: hello world | Date: .date.",
+			input:  "Text: .text. | Num: .number. | Func: .func. | Date: .date.",
+			want:   "Text: 12:00:00 | Num: 123 | Func: hello world | Date: .date.",
 		},
 		{
-			name:  "replaces repeated placeholder",
-			rules: map[string]interface{}{"word": "Go"},
+			name:   "replaces repeated placeholder",
+			rules:  map[string]interface{}{"word": "Go"},
 			marker: "x",
-			input: "xwordx and xwordx",
-			want:  "Go and Go",
+			input:  "xwordx and xwordx",
+			want:   "Go and Go",
 		},
 		{
-			name:  "replaces adjacent placeholders",
-			rules: map[string]interface{}{"first": "A", "second": "B"},
+			name:   "replaces adjacent placeholders",
+			rules:  map[string]interface{}{"first": "A", "second": "B"},
 			marker: "|",
-			input: "|first||second|",
-			want:  "AB",
+			input:  "|first||second|",
+			want:   "AB",
 		},
 	}
 
@@ -171,28 +213,28 @@ func TestFormatterFormatWithMarker(t *testing.T) {
 
 func TestFormatterFormatWithDoubleMarker(t *testing.T) {
 	tests := []struct {
-		name  string
-		rules map[string]interface{}
-		start_marker string
-		end_marker string
-		input string
-		want  string
+		name        string
+		rules       map[string]interface{}
+		startMarker string
+		endMarker   string
+		input       string
+		want        string
 	}{
 		{
-			name:  "replaces string value with 2 different marker",
-			rules: map[string]interface{}{"name": "Alice"},
-			start_marker: "|",
-			end_marker: "&",
-			input: "Hello, |name&!",
-			want:  "Hello, Alice!",
+			name:        "replaces string value with different markers",
+			rules:       map[string]interface{}{"name": "Alice"},
+			startMarker: "|",
+			endMarker:   "&",
+			input:       "Hello, |name&!",
+			want:        "Hello, Alice!",
 		},
 		{
-			name:  "replaces numeric value with 2 different marker",
-			rules: map[string]interface{}{"number": 123},
-			start_marker: "|",
-			end_marker: "&",
-			input: "Number: |number&",
-			want:  "Number: 123",
+			name:        "replaces numeric value with different markers",
+			rules:       map[string]interface{}{"number": 123},
+			startMarker: "|",
+			endMarker:   "&",
+			input:       "Number: |number&",
+			want:        "Number: 123",
 		},
 	}
 
@@ -201,7 +243,7 @@ func TestFormatterFormatWithDoubleMarker(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f.SetRules(tt.rules)
-			f.SetMarkers(tt.start_marker, tt.end_marker)
+			f.SetMarkers(tt.startMarker, tt.endMarker)
 			got := f.Format(tt.input)
 			if got != tt.want {
 				t.Errorf("Format(%q) = %q, want %q", tt.input, got, tt.want)

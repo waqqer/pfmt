@@ -6,10 +6,6 @@ type Pfmt struct {
 	end_marker string
 }
 
-type PFormatter interface {
-	Format()
-}
-
 func NewEmptyFormatter() *Pfmt {
 	return &Pfmt{
 		rules: map[string]interface{}{},
