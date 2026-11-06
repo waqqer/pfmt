@@ -5,7 +5,7 @@
 ## Installation
 
 ```sh
-go get github.com/waqqer/pfmt
+go get github.com/waqqer/pfmt/v2
 ```
 
 ## Examples
