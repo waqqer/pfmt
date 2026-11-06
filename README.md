@@ -17,8 +17,8 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/waqqer/pfmt"
+	
+	"github.com/waqqer/pfmt/v2"
 )
 
 func main() {
@@ -59,7 +59,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/waqqer/pfmt"
+	"github.com/waqqer/pfmt/v2"
 )
 
 func main() {
