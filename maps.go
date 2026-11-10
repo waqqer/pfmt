@@ -5,7 +5,7 @@ func margeMaps(d ...map[string]interface{}) map[string]interface{} {
 		return make(map[string]interface{})
 	}
 
-	r := make(map[string]interface{}, countLen(d...))
+	r := make(map[string]interface{}, countUniqueLen(d...))
 
 	for _, v := range d {
 		for ind, val := range v {
@@ -17,17 +17,31 @@ func margeMaps(d ...map[string]interface{}) map[string]interface{} {
 }
 
 func mergeMapsWithBase(base map[string]interface{}, d ...map[string]interface{}) map[string]interface{} {
-	maps := make([]map[string]interface{}, 0, len(d) + 1)
-	maps = append(maps, base)
-	maps = append(maps, d...)
+	maps := make([]map[string]interface{}, len(d) + 1)
+	maps[0] = base
+	
+	for i := 0; i < len(d); i++ {
+		maps[i + 1] = d[i]
+	}
 
 	return margeMaps(maps...)
 }
 
-func countLen(d ...map[string]interface{}) int {
-	l := 0
-	for _, v := range d {
-		l += len(v)
+func countUniqueLen(d ...map[string]interface{}) int {
+	count := 0
+	for i, current := range d {
+		for key := range current {
+			seen := false
+			for j := 0; j < i; j++ {
+				if _, exists := d[j][key]; exists {
+					seen = true
+					break
+				}
+			}
+			if !seen {
+				count++
+			}
+		}
 	}
-	return l
+	return count
 }

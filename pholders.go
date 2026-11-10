@@ -6,9 +6,6 @@ import (
 )
 
 func replacePlaceholders(text string, rules map[string]interface{}, start_marker string, end_marker string) string {
-	start_marker = strings.TrimSpace(start_marker)
-	end_marker = strings.TrimSpace(end_marker)
-
 	if len(rules) == 0 {
 		return text
 	}

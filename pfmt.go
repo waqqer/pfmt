@@ -3,8 +3,15 @@ package pfmt
 import "strings"
 
 func (f *Pfmt) SetMarkers(start string, end string) {
-	f.start_marker = strings.TrimSpace(start)
-	f.end_marker = strings.TrimSpace(end)
+	s := strings.TrimSpace(start)
+	e := strings.TrimSpace(end)
+
+	if len(s) == 0 || len(e) == 0 {
+		return
+	}
+
+	f.start_marker = s
+	f.end_marker = e
 }
 
 func (f *Pfmt) Format(text string) string {
