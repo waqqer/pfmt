@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func replacePlaceholders(text string, rules map[string]interface{}, start_marker string, end_marker string) string {
+func replacePlaceholders(text string, rules Rule, start_marker string, end_marker string) string {
 	if len(rules) == 0 {
 		return text
 	}

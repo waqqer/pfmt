@@ -1,23 +1,25 @@
 package pfmt
 
+type Rule map[string]interface{}
+
 type Pfmt struct {
-	rules  map[string]interface{}
+	rules        Rule
 	start_marker string
-	end_marker string
+	end_marker   string
 }
 
 func NewEmptyFormatter() *Pfmt {
 	return &Pfmt{
-		rules: map[string]interface{}{},
+		rules:        Rule{},
 		start_marker: "%",
-		end_marker: "%",
+		end_marker:   "%",
 	}
 }
 
-func NewFormatter(rules ...map[string]interface{}) *Pfmt {
+func NewFormatter(rules ...Rule) *Pfmt {
 	return &Pfmt{
-		rules: margeMaps(rules...),
+		rules:        margeRules(rules...),
 		start_marker: "%",
-		end_marker: "%",
+		end_marker:   "%",
 	}
 }
