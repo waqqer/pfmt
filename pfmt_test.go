@@ -1,6 +1,65 @@
 package pfmt
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
+
+func TestFormat(t *testing.T) {
+	tests := []struct {
+		name  string
+		rules Rule
+		input string
+		want  string
+	}{
+		{
+			name:  "replaces placeholders with default markers",
+			rules: Rule{"name": "Alice", "count": 3},
+			input: "Hello %name%, count: %count%",
+			want:  "Hello Alice, count: 3",
+		},
+		{
+			name:  "preserves unknown placeholders",
+			rules: Rule{"name": "Alice"},
+			input: "%name% %unknown%",
+			want:  "Alice %unknown%",
+		},
+		{
+			name:  "returns input when rules are empty",
+			rules: Rule{},
+			input: "Hello %name%",
+			want:  "Hello %name%",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Format(tt.input, tt.rules); got != tt.want {
+				t.Errorf("Format(%q, rules) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFormatterWriteAndPointerFormat(t *testing.T) {
+	f := NewFormatter(Rule{"name": "Alice"})
+
+	t.Run("writes formatted text to writer", func(t *testing.T) {
+		var got strings.Builder
+		f.WFormat(&got, "Hello %name%")
+		if want := "Hello Alice"; got.String() != want {
+			t.Errorf("WFormat() = %q, want %q", got.String(), want)
+		}
+	})
+
+	t.Run("writes formatted text to pointer", func(t *testing.T) {
+		got := "old value"
+		f.PFormat(&got, "Hello %name%")
+		if want := "Hello Alice"; got != want {
+			t.Errorf("PFormat() = %q, want %q", got, want)
+		}
+	})
+}
 
 func TestFormatterFormat(t *testing.T) {
 	tests := []struct {
