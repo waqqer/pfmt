@@ -10,6 +10,14 @@ func Format(text string, rules Rule) string {
 	return replacePlaceholders(text, rules, DEFAULT_START_MARKER, DEFAULT_END_MARKER)
 }
 
+func WFormat(w io.Writer, text string, rules Rule) (n int, err error) {
+	return fmt.Fprint(w, replacePlaceholders(text, rules, DEFAULT_START_MARKER, DEFAULT_END_MARKER))
+}
+
+func PFormat(p *string, text string, rules Rule) {
+	*p = replacePlaceholders(text, rules, DEFAULT_START_MARKER, DEFAULT_END_MARKER)
+}
+
 func (f *Pfmt) SetMarkers(start string, end string) {
 	s := strings.TrimSpace(start)
 	e := strings.TrimSpace(end)
@@ -26,8 +34,8 @@ func (f *Pfmt) Format(text string) string {
 	return replacePlaceholders(text, f.rules, f.start_marker, f.end_marker)
 }
 
-func (f *Pfmt) WFormat(w io.Writer, text string) {
-	fmt.Fprint(w, replacePlaceholders(text, f.rules, f.start_marker, f.end_marker))
+func (f *Pfmt) WFormat(w io.Writer, text string) (n int, err error) {
+	return fmt.Fprint(w, replacePlaceholders(text, f.rules, f.start_marker, f.end_marker))
 }
 
 func (f *Pfmt) PFormat(p *string, text string) {
