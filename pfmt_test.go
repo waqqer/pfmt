@@ -332,7 +332,7 @@ func TestPackageWriteAndPointerFormat(t *testing.T) {
 	t.Run("returns writer errors", func(t *testing.T) {
 		wantErr := errors.New("write failed")
 		n, err := WFormat(errorWriter{err: wantErr}, "Hello %name%", rules)
-		if !errors.Is(err, wantErr) {
+		if err != wantErr {
 			t.Errorf("WFormat() error = %v, want %v", err, wantErr)
 		}
 		if n != 0 {
