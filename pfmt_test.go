@@ -1,6 +1,7 @@
 package pfmt
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -309,4 +310,49 @@ func TestFormatterFormatWithDoubleMarker(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPackageWriteAndPointerFormat(t *testing.T) {
+	rules := Rule{"name": "Alice"}
+
+	t.Run("writes formatted text and returns byte count", func(t *testing.T) {
+		var got strings.Builder
+		n, err := WFormat(&got, "Hello %name%", rules)
+		if err != nil {
+			t.Fatalf("WFormat() error = %v", err)
+		}
+		if want := "Hello Alice"; got.String() != want {
+			t.Errorf("WFormat() = %q, want %q", got.String(), want)
+		}
+		if want := len("Hello Alice"); n != want {
+			t.Errorf("WFormat() bytes written = %d, want %d", n, want)
+		}
+	})
+
+	t.Run("returns writer errors", func(t *testing.T) {
+		wantErr := errors.New("write failed")
+		n, err := WFormat(errorWriter{err: wantErr}, "Hello %name%", rules)
+		if !errors.Is(err, wantErr) {
+			t.Errorf("WFormat() error = %v, want %v", err, wantErr)
+		}
+		if n != 0 {
+			t.Errorf("WFormat() bytes written = %d, want 0", n)
+		}
+	})
+
+	t.Run("assigns formatted text to pointer", func(t *testing.T) {
+		got := "old value"
+		PFormat(&got, "Hello %name%", rules)
+		if want := "Hello Alice"; got != want {
+			t.Errorf("PFormat() = %q, want %q", got, want)
+		}
+	})
+}
+
+type errorWriter struct {
+	err error
+}
+
+func (w errorWriter) Write([]byte) (int, error) {
+	return 0, w.err
 }

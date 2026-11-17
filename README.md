@@ -71,14 +71,18 @@ text := formatter.Format("Hello, {name}!")
 
 ### Write formatted text
 
-`WFormat` writes the formatted result to an `io.Writer`. `PFormat` assigns the result to a string pointer.
+The package-level `WFormat` function writes formatted text using the default markers and returns the number of bytes written and any writer error. `PFormat` assigns the formatted result to a string pointer. The formatter also provides `WFormat` and `PFormat` methods that use its rules and custom markers.
 
 ```go
 var output strings.Builder
-formatter.WFormat(&output, "Hello, {name}!")
+n, err := pfmt.WFormat(&output, "Hello, %name%!", pfmt.Rule{"name": "Alice"})
+if err != nil {
+	// Handle the writer error.
+}
+_ = n
 
 text := ""
-formatter.PFormat(&text, "Hello, {name}!")
+pfmt.PFormat(&text, "Hello, %name%!", pfmt.Rule{"name": "Alice"})
 ```
 
 ## Function values
